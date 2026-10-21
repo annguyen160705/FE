@@ -1,0 +1,61 @@
+read_liberty lib/stdcells_tt.lib
+read_verilog build/netlists/counter_mapped.v
+link_design counter
+read_sdc constraints/design.sdc
+exit
+read_sdc constraints/design.sdc
+read_liberty lib/stdcells_tt.lib
+read_verilog build/netlists/counter_mapped.v
+link_design counter
+read_sdc constraints/design.sdc
+report_checks -path_delay max
+report_checks -path_delay min
+report_worst_slack
+set corners {ss tt ff}
+array set corner_libs {
+    ss "lib/stdcells_ss.lib"
+    tt "lib/stdcells_tt.lib"
+    ff "lib/stdcells_ff.lib"
+}
+read_verilog build/netlist/design_mapped.v
+read_verilog build/netlists/design_mapped.v
+read_verilog build/netlists/counter_mapped.v
+link_design counter
+read_sdc constraints/design.sdc
+foreach corner $corners {
+    puts "\n=========================================="
+    puts "Corner: $corner"
+    puts "=========================================="
+    read_liberty -corner $corner $corner_libs($corner)
+    puts "\nSetup Timing:"
+    report_checks -corner $corner -path_delay max -path_count 5
+    puts "\nHold Timing:"
+    report_checks -corner $corner -path_delay min -path_count 5
+}
+define_corners ss tt ff
+exit
+set corners {ss tt ff}
+define_corners ss tt ff
+array set corner_libs {
+    ss "lib/stdcells_ss.lib"
+    tt "lib/stdcells_tt.lib"
+    ff "lib/stdcells_ff.lib"
+}
+read_verilog build/netlists/counter_mapped.v
+link_design counter
+read_sdc constraints/design.sdc
+foreach corner $corners {
+    puts "\n=========================================="
+    puts "Corner: $corner"
+    puts "=========================================="
+    read_liberty -corner $corner $corner_libs($corner)
+    puts "\nSetup Timing:"
+    report_checks -corner $corner -path_delay max -path_count 5
+    puts "\nHold Timing:"
+    report_checks -corner $corner -path_delay min -path_count 5
+}
+exit
+scripts/multi_corner.tcl 
+source scripts/multi_corner.tcl 
+tee build/reports/multi_corner.log
+exit
